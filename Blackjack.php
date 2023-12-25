@@ -37,21 +37,20 @@ class Blackjack
         $info = [
             'WINNERS' => [],
             'TIED' => [],
-            'LOSERS' => []
+            'LOSERS' => ['Dealer wins from:']
         ];
 
-        
         if ($this->points($dealer->hand()) > 21) {
             foreach ($players as $player) {
                 if ($this->points($player->hand()) <= 21) {
-                    $info['WINNERS'][] = $player->name() . ' Wins!' . PHP_EOL;
+                    $info['WINNERS'][] = $player->name() . ' Wins!';
                 }
             }
         } elseif ($this->points($dealer->hand()) == 21) {
-            $win = $dealer->name() . ' Wins!' . PHP_EOL;
+            $win = $dealer->name() . ' Wins!';
             foreach ($players as $player) {
                 if ($this->points($player->hand()) == $this->points($dealer->hand())) {
-                     $info['TIED'][] = $dealer->name() . ' tied with ' . $player->name() . PHP_EOL;
+                     $info['TIED'][] = $dealer->name() . ' tied with ' . $player->name();
                 } else {
                     $info['LOSERS'][] = $$player->name();
                 }
@@ -59,41 +58,40 @@ class Blackjack
         } elseif ($this->points($dealer->hand()) < 21) {
             foreach ($players as $player) {
                 if ($this->points($player->hand()) == 21) {
-                    $info['WINNERS'][] = $player->name() . ' Wins!' . PHP_EOL;
+                    $info['WINNERS'][] = $player->name() . ' Wins!';
                 } elseif ($this->points($player->hand()) < $this->points($dealer->hand())) {
                     $info['LOSERS'][] = $player->name();
                 } elseif ($this->points($player->hand()) <= 21 && $this->points($player->hand()) > $this->points($dealer->hand())) {
-                    $info['WINNERS'][] = $player->name() . ' Wins!' . PHP_EOL;
+                    $info['WINNERS'][] = $player->name() . ' Wins!';
                 } elseif ($this->points($player->hand()) == $this->points($dealer->hand())) {
-                    $info['TIED'][] = $dealer->name() . ' tied with ' . $player->name() . PHP_EOL;
+                    $info['TIED'][] = $dealer->name() . ' tied with ' . $player->name();
                 } elseif ($this->points($player->hand()) > 21) {
                     $info['LOSERS'][] = $player->name();
                 } elseif ($this->points($player->hand()) > 21 && count($player->hand()) > 4) {
-                    $info['WINNERS'][] = $player->name() . ' Wins!' . PHP_EOL;
+                    $info['WINNERS'][] = $player->name() . ' Wins!';
                 }
             }
         }
             echo PHP_EOL . 'DEALER:' . PHP_EOL;
             echo $dealer->showHand() . '=> ' . $this->scoreHand($dealer->hand()) . PHP_EOL;
-            $this->finalResults($info, $players, $dealer);
+            $this->finalResults($info, $players);
     }
 
 
-    private function finalResults($info, $players, $dealer)
+    private function finalResults($info, $players)
     {
         foreach ($info as $key => $value) {
             if (empty($value)) {
                 continue;
-            } elseif ($key == 'LOSERS') {
+            } elseif ($key == 'LOSERS' && count($value) == 1) {
                 echo PHP_EOL . $key . ':' . PHP_EOL;
-                echo $dealer->name() . ' wins from:' . PHP_EOL;
                 foreach ($value as $result) {
-                    echo $result . PHP_EOL;
+                    echo 'Dealer' . PHP_EOL;
                 }
             } else {
                 echo PHP_EOL . $key . ':' . PHP_EOL;
                 foreach ($value as $result) {
-                    echo $result;
+                    echo $result . PHP_EOL;
                 }
             }
         }
