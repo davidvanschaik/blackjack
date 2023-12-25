@@ -34,12 +34,12 @@ class Blackjack
 
     public function resultValidation($dealer, $players)
     {
-        $win = '';
         $info = [
             'WINNERS' => [],
             'TIED' => [],
             'LOSERS' => []
         ];
+
         
         if ($this->points($dealer->hand()) > 21) {
             foreach ($players as $player) {
@@ -53,7 +53,7 @@ class Blackjack
                 if ($this->points($player->hand()) == $this->points($dealer->hand())) {
                      $info['TIED'][] = $dealer->name() . ' tied with ' . $player->name() . PHP_EOL;
                 } else {
-                    $info['LOSERS'][] = $dealer->name() . ' Wins from ' . $player->name() . PHP_EOL;
+                    $info['LOSERS'][] = $$player->name();
                 }
             }
         } elseif ($this->points($dealer->hand()) < 21) {
@@ -61,13 +61,13 @@ class Blackjack
                 if ($this->points($player->hand()) == 21) {
                     $info['WINNERS'][] = $player->name() . ' Wins!' . PHP_EOL;
                 } elseif ($this->points($player->hand()) < $this->points($dealer->hand())) {
-                    $info['LOSERS'][] = $dealer->name() . ' Wins from ' . $player->name() . PHP_EOL;
+                    $info['LOSERS'][] = $player->name();
                 } elseif ($this->points($player->hand()) <= 21 && $this->points($player->hand()) > $this->points($dealer->hand())) {
                     $info['WINNERS'][] = $player->name() . ' Wins!' . PHP_EOL;
                 } elseif ($this->points($player->hand()) == $this->points($dealer->hand())) {
                     $info['TIED'][] = $dealer->name() . ' tied with ' . $player->name() . PHP_EOL;
                 } elseif ($this->points($player->hand()) > 21) {
-                    $info['LOSERS'][] = $dealer->name() . ' Wins from ' . $player->name() . PHP_EOL;
+                    $info['LOSERS'][] = $player->name();
                 } elseif ($this->points($player->hand()) > 21 && count($player->hand()) > 4) {
                     $info['WINNERS'][] = $player->name() . ' Wins!' . PHP_EOL;
                 }
@@ -75,15 +75,21 @@ class Blackjack
         }
             echo PHP_EOL . 'DEALER:' . PHP_EOL;
             echo $dealer->showHand() . '=> ' . $this->scoreHand($dealer->hand()) . PHP_EOL;
-            $this->finalResults($info, $players);
+            $this->finalResults($info, $players, $dealer);
     }
 
 
-    private function finalResults($info, $players)
+    private function finalResults($info, $players, $dealer)
     {
         foreach ($info as $key => $value) {
             if (empty($value)) {
                 continue;
+            } elseif ($key == 'LOSERS') {
+                echo PHP_EOL . $key . ':' . PHP_EOL;
+                echo $dealer->name() . ' wins from:' . PHP_EOL;
+                foreach ($value as $result) {
+                    echo $result . PHP_EOL;
+                }
             } else {
                 echo PHP_EOL . $key . ':' . PHP_EOL;
                 foreach ($value as $result) {

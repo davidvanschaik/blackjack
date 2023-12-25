@@ -70,11 +70,13 @@ class Dealer
         } elseif ($this->points($person->hand()) >= 18) {
             echo $person->showHand()  . '=> ' . $this->msg($person->hand()) . ' Dealer stops' . PHP_EOL;
             $person->stillPlaying = false;
-        } elseif ($this->points($person->hand()) < 18) {
-            echo $person->showHand() . PHP_EOL;
+        } elseif ($this->points($person->hand()) < 18 && count($person->hand()) == 2) {
+            echo $person->showHand() . '=> ' . $this->msg($person->hand()). PHP_EOL;
             $person->addCard($card = $this->deck->drawCard());
-            echo $person->name() . ' drew ' . $card->show() . PHP_EOL;
-        } else {
+            echo $person->name() . ' drew ' . $card->show() . ' => ' . $this->msg($person->hand()) . PHP_EOL;
+        } elseif ($this->points($person->hand()) < 18) {
+            $person->addCard($card = $this->deck->drawCard());
+            echo $person->name() . ' drew ' . $card->show() . ' => ' . $this->msg($person->hand()) . PHP_EOL;
             $person->stillPlaying = false;
         }
     }
@@ -92,7 +94,7 @@ class Dealer
                 echo $person->name() . ' stops ' . PHP_EOL;
             } else {
                 $person->addCard($card = $this->deck->drawCard());
-                echo $person->name() . ' drew ' . $card->show() . PHP_EOL;
+                echo $person->name() . ' drew ' . $card->show() . ' => ' . $this->msg($person->hand()) . PHP_EOL;
                 if ($this->points($person->hand()) >= 21) {
                     $person->stillPlaying = false;
                 } elseif ($this->points($person->hand()) < 21 && count($person->hand()) > 4) {
