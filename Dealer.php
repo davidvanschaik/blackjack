@@ -14,7 +14,7 @@ class Dealer
     {
         $this->blackjack = $blackjack;
         $this->deck = $deck;
-        $this->addPlayer(new Player('Dealer'));
+        $this->addPlayer(new Player('Dealer', 0));
     }
 
     public function addPlayer(Player $player)

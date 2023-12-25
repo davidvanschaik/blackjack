@@ -6,27 +6,19 @@ require_once("./Player.php");
 require_once("./Deck.php");
 require_once("./Card.php");
 
-$name = [
-    "Jennifer", "Eugene", "Jose", "Sarah", "Luuk",
-    "Smokey", "Lola", "Lizzy", "Milo", "Gaby", "Shin",
-    "Foivos", "Nando", "Cesco", "Nique", "Romano",
-    "Noah", "Thijs", "Lex", "Nino", "Stefan", "Iris",
-    "Geurt", "Daniel", "Jonah", "KlangKuenstler", "Kobosil",
-    "Raxeller", "George", "Iskander", "Kian", "Spike",
-    "Teun", "Jordy", "Chico"
-];
+$amount = readline("How many players would you like to play with ... ? ");
 
-$x = readline("How many players would you like to play with ... ? ");
-
-if (is_numeric($x) && $x > 1 && $x < 12) {
+if (is_numeric($amount) && $amount > 1 && $amount < 12) {
     $dealer = new Dealer(new Blackjack(), new Deck());
-    foreach (array_rand($name, $x) as $player) {
-        $dealer->addPlayer(new Player($name[$player]));
+    for ($x = 0; $x < $amount ; $x++) { 
+        $name = readline("What's your name? ... ");
+        $bet = readline($name . ', please place your bet: ');
+        $dealer->addPlayer(new Player($name, $bet));
     }
+    $dealer->addPlayer(new Player('Dealer', 0));
+    echo PHP_EOL . "Let's Play!" . PHP_EOL;
     $dealer->playGame();
 } else {
     echo "Invalid amount of players, try again" . PHP_EOL;
     die;
 }
-
-

@@ -6,11 +6,13 @@ class Player
 {
     private $hand = [];
     private $name;
+    private $bet;
     public $stillPlaying = true;
 
-    public function __construct($name)
+    public function __construct($name, $bet)
     {
         $this->name = $name;
+        $this->bet = $bet;
     }
 
     public function addCard(Card $card)
