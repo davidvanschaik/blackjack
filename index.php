@@ -16,7 +16,7 @@ $name = [
     "Teun", "Jordy", "Chico"
 ];
 
-$x = readline("With how many players would you like to play with ... ? " . PHP_EOL);
+$x = readline("How many players would you like to play with ... ? ");
 
 if (is_numeric($x) && $x > 1 && $x < 12) {
     $dealer = new Dealer(new Blackjack(), new Deck());

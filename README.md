@@ -13,8 +13,8 @@ This repository contains a implentation of a Blackjack game using PHP and Object
 
 ## Features
 - **Player Interaction**: Interacts with players. Players can Hit or Stand.
-- **Deck**: The cards will be generated within Deck. Every card will be removed from Deck when it has dealt. Remember a deck has 52 cards.
-- **Dealer**: If dealer score > 18. Draw card else dealer stand. Player > 21 busted.
+- **Deck**: The cards will be generated within Deck. Every card will be removed from Deck when is dealt. Remember a deck has 52 cards.
+- **Dealer**: If dealer score < 18. Draw card else dealer stand. Player > 21 busted.
 - **Scoring Calculations**: Calculates who won, the dealer or the players. 
 - **Win or Loss**: The results will be shown after all players stand or busted.
 
@@ -32,10 +32,10 @@ cd path/to/blackjack
 ```
 
 3. **Run index.php and decide with how many players you are playing**:
-Note: Make sure you have PHP installed.
+**Note**: Make sure you have PHP installed.
 ```bash
 php index.php
-With how many players would you like to play with ... ?
+How many players would you like to play with ... ?
 ```
 Enter amount of players.
 

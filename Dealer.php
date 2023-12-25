@@ -64,8 +64,11 @@ class Dealer
 
     private function dealer(Player $person)
     {
-        if ($this->points($person->hand()) >= 18 && count($person->hand()) == 2) {
+        if ($this->points($person->hand()) == 21 && count($person->hand()) == 2) {
             echo $person->showHand()  . '=> ' . $this->msg($person->hand()) . PHP_EOL;
+            $person->stillPlaying = false;
+        } elseif ($this->points($person->hand()) >= 18) {
+            echo $person->showHand()  . '=> ' . $this->msg($person->hand()) . ' Dealer stops' . PHP_EOL;
             $person->stillPlaying = false;
         } elseif ($this->points($person->hand()) < 18) {
             echo $person->showHand() . PHP_EOL;
@@ -82,7 +85,7 @@ class Dealer
             echo $person->showHand() . '=> ' . $this->msg($person->hand()) . PHP_EOL;
             $person->stillPlaying = false;
         } elseif ($this->points($person->hand()) < 21) {
-            echo $person->name() . "s turn. ";
+            echo $person->name() . "'s turn. ";
             $choice =  strtolower(readline($person->showHand() . '=> ' . $this->points($person->hand()) . PHP_EOL . 'Hit (H) or Stand (S) ...? '));
             if ($choice == 's') {
                 $person->stillPlaying = false;
