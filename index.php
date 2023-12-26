@@ -22,3 +22,4 @@ if (is_numeric($amount) && $amount > 1 && $amount < 12) {
     echo "Invalid amount of players, try again" . PHP_EOL;
     die;
 }
+

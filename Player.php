@@ -38,4 +38,9 @@ class Player
     {
         return $this->hand;
     }
+
+    public function bet()
+    {
+        return $this->bet;
+    }
 }

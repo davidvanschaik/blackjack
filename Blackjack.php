@@ -37,13 +37,16 @@ class Blackjack
         $info = [
             'WINNERS' => [],
             'TIED' => [],
-            'LOSERS' => ['Dealer wins from:']
+            'LOSERS' => ['Dealer wins from:'],
+            'BET' => []
         ];
 
         if ($this->points($dealer->hand()) > 21) {
             foreach ($players as $player) {
                 if ($this->points($player->hand()) <= 21) {
                     $info['WINNERS'][] = $player->name() . ' Wins!';
+                } else {
+                    $info['LOSERS'][] = $player->name();
                 }
             }
         } elseif ($this->points($dealer->hand()) == 21) {
@@ -72,9 +75,32 @@ class Blackjack
                 }
             }
         }
-            echo PHP_EOL . 'DEALER:' . PHP_EOL;
-            echo $dealer->showHand() . '=> ' . $this->scoreHand($dealer->hand()) . PHP_EOL;
-            $this->finalResults($info, $players);
+
+        foreach ($players as $player) {
+            $bet = $player->bet();
+            if ($this->scoreHand($player->hand()) == 'BlackJack!' && $this->points($dealer->hand()) != 21) {
+                $info['BET'][] = $player->name() . ' has ' . $this->scoreHand($player->hand()) . '! ' . $bet . " X 2.5 => " . $bet * 2.5;
+            } elseif ($this->scoreHand($player->hand()) == 'Five Card Charlie!' && $this->points($dealer->hand()) != 21) {
+                $info['BET'][] = $player->name() . ' has ' . $this->scoreHand($player->hand()) . '! ' . $bet . " X 2.5 => " . $bet * 2.5;
+            } elseif ($this->points($dealer->hand()) < 21 && $this->points($player->hand()) < 21 && $this->points($dealer->hand()) < $this->points($player->hand())) {
+                $info['BET'][] = $player->name() . ' has ' . $this->scoreHand($player->hand()) . '! ' . $bet . " X 2 => " . $bet * 2;
+            } elseif ($this->points($player->hand()) == $this->points($dealer->hand())) {
+                $info['BET'][] = $player->name() . ' tied with ' . $dealer->name() . '! ' . $bet . " X 1 => $bet";
+            } elseif ($this->points($dealer->hand()) < 21 && $this->points($player->hand()) < 21 && $this->points($dealer->hand()) > $this->points($player->hand())) {
+                $info['BET'][] = $player->name() . ' has ' . $this->scoreHand($player->hand()) . '! ' . $bet . " X 0 => 0";
+            } elseif ($this->points($player->hand()) > 21) {
+                $info['BET'][] = $player->name() . $this->scoreHand($player->hand()) . '! ' . $bet . " X 0 => 0";
+            }
+        }
+
+        echo PHP_EOL . 'DEALER:' . PHP_EOL;
+        echo $dealer->showHand() . '=> ' . $this->scoreHand($dealer->hand()) . PHP_EOL;
+
+        echo PHP_EOL . 'SHOW HAND:' . PHP_EOL;
+        foreach ($this->descResults($players) as $value) {
+            echo $value['hand'] . ' => ' . $value['points'] . PHP_EOL;
+        }
+        $this->finalResults($info, $players);
     }
 
 
@@ -94,11 +120,6 @@ class Blackjack
                     echo $result . PHP_EOL;
                 }
             }
-        }
-
-        echo PHP_EOL . 'SHOW HAND:' . PHP_EOL;
-        foreach ($this->descResults($players) as $value) {
-            echo $value['hand'] . ' => ' . $value['points'] . PHP_EOL;
         }
     }
 
