@@ -1,21 +1,21 @@
 # BlackJack => 21!
 
 ## introduction
-This repository contains a implentation of a Blackjack game using PHP and Object-Oriented Programming (OOP). The project contains multiple PHP files, each file responsible for specific functionality.
+This repository contains a sumilation of a Blackjack game using PHP and Object-Oriented Programming (OOP). The project contains multiple PHP files, each file responsible for specific functionality.
 
 ## Project Structure
 - **Deck.php**: Generates deck. returns a card to Card.php with the suit and value variables.
 - **Card.php**: Contains the validation of the cards and the points.
-- **Player.php**: Contains info like name, if still playing and cards.
+- **Player.php**: Contains info like name, if still playing, bets and cards.
 - **Dealer.php**: Keeps track who is still playing or is busted, also checks if dealer will hit or stand. 
-- **Blackjack.php**: Contains all the result calculations. 
-- **index.php**: Run the game and play blackjack.
+- **Blackjack.php**: Contains all the result and bet calculations. 
+- **index.php**: Asks user amount of players. Each player enters their name and bet.
 
 ## Features
 - **Player Interaction**: Interacts with players. Players can Hit or Stand.
 - **Deck**: The cards will be generated within Deck. Every card will be removed from Deck when is dealt. Remember a deck has 52 cards.
 - **Dealer**: If dealer score < 18. Draw card else dealer stand. Player > 21 busted.
-- **Scoring Calculations**: Calculates who won, the dealer or the players. 
+- **Scoring Calculations**: Calculates who won, the dealer or the players and how much they have won. 
 - **Win or Loss**: The results will be shown after all players stand or busted.
 
 ## Setup 
@@ -38,10 +38,11 @@ php index.php
 How many players would you like to play with ... ?
 ```
 Enter amount of players.
+Enter name of each player and enter their bet
 
 
 4. **Play game**:
-Each player will be asked to Hit or Stand if points <= 21. At the end the results will appear. Winners, tied with dealer or losers.
+Each player will be asked to Hit or Stand if points <= 21. At the end the results will appear. Winners, tied with dealer or losers with the bets.
 
 
 
