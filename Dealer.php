@@ -70,7 +70,7 @@ class Dealer
                 echo $person->showHand()  . '=> ' . $this->msg($person->hand()) . PHP_EOL;
                 $person->stillPlaying = false;
             } elseif ($this->points($person->hand()) >= 18) {
-                echo $person->showHand()  . '=> ' . $this->msg($person->hand()) . ' Dealer stops' . PHP_EOL;
+                echo $person->showHand()  . '=> ' . ' Dealer stops' . PHP_EOL;
                 $person->stillPlaying = false;
             } elseif ($this->points($person->hand()) < 18 && count($person->hand()) == 2) {
                 echo $person->showHand() . '=> ' . $this->msg($person->hand()). PHP_EOL;
@@ -94,8 +94,8 @@ class Dealer
             } elseif ($this->points($person->hand()) < 21) {
                 echo $person->showHand() . '=> ' . $this->points($person->hand()) . PHP_EOL;
                 while($person->stillPlaying) {
-                $choice =  strtolower(readline('Hit (H) or Stand (S) ...? '));
-                if ($choice == 's') {
+                // $choice =  strtolower(readline('Hit (H) or Stand (S) ...? '));
+                if ($this->points($person->hand()) >= 18) {
                     $person->stillPlaying = false;
                     echo $person->name() . ' stops ' . PHP_EOL;
                 } else {

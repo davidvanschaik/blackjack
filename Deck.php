@@ -13,6 +13,8 @@ class Deck
         foreach ($suits as $suit) {
             foreach ($values as $value) {
                 $this->cards[] = new Card($suit, $value);
+                $this->cards[] = new Card($suit, $value);
+                $this->cards[] = new Card($suit, $value);
             }
         }
     }
