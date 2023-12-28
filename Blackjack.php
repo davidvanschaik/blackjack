@@ -37,7 +37,7 @@ class Blackjack
         $info = [
             'WINNERS' => [],
             'TIED' => [],
-            'LOSERS' => []
+            'LOSERS' => [],
         ];
         $dealerPoints = $this->points($dealer->hand());
 
@@ -55,20 +55,9 @@ class Blackjack
             $playerPoints = $this->points($player->hand());
 
             if ($playerPoints > 21) {
-                $info['LOSERS'][] = $player->name();
+                $info['LOSERS'][] = $player;
             } else {
-                $info['WINNERS'][] = $player->name();
-            }
-        }
-    }
-
-    private function tiedWith($players, &$info)
-    {
-        foreach ($players as $player) {
-            if ($this->points($player->hand()) == 21) {
-                $info['TIED'][] = $player->name() . ' tied with Dealer!';
-            } else {
-                $info['LOSERS'][] = $player->name();
+                $info['WINNERS'][] = $player;
             }
         }
     }
@@ -80,13 +69,13 @@ class Blackjack
             $playerPoints = $this->points($player->hand());
 
             if ($playerPoints > 21) {
-                $info['LOSERS'][] = $player->name();
+                $info['LOSERS'][] = $player;
             } elseif ($playerPoints > $dealerPoints) {
-                $info['WINNERS'][] = $player->name();
+                $info['WINNERS'][] = $player;
             } elseif ($playerPoints < $dealerPoints) {
-                $info['LOSERS'][] = $player->name();
+                $info['LOSERS'][] = $player;
             } else {
-                $info['TIED'][] = $player->name() . ' tied with Dealer!';
+                $info['TIED'][] = $player;
             }
         }
     }
@@ -107,7 +96,27 @@ class Blackjack
             } else {
                 echo PHP_EOL . $key . ':' . PHP_EOL;
                 foreach ($value as $result) {
-                    echo $result . PHP_EOL;
+                    if ($key == 'TIED') {
+                        echo $result->name() . ' tied with Dealer!' . PHP_EOL;
+                    } else {
+                        echo $result->name() . PHP_EOL;
+                    }
+                }
+            }
+        }
+        if (!empty($info['WINNERS'])) {
+            echo PHP_EOL . 'BET:' . PHP_EOL;
+            foreach ($info as $key => $value) {
+                foreach ($value as $player) {
+                    $message = $this->scoreHand($player->hand());
+
+                    if ($key == 'WINNERS' && $this->scoreHand($player->hand()) == 'BlackJack!' || $this->scoreHand($player->hand()) == 'Five Card Charlie!')  {
+                        echo $player->name() . ' has ' . $message . ' => ' . $player->bet() . ' X 2.5 => ' . $player->bet() * 2.5 . PHP_EOL;
+                    } elseif ($key == 'WINNERS') {
+                        echo $player->name() . ' has ' . $message . ' => ' . $player->bet() . ' X 2 => ' . $player->bet() * 2 . PHP_EOL;
+                    } elseif ($key == 'TIED') {
+                        echo $player->name() . ' has ' . $message . ' => ' . $player->bet() . ' X 1 => ' . $player->bet() . PHP_EOL;
+                    }
                 }
             }
         }
