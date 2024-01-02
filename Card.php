@@ -27,13 +27,7 @@ class Card
 
     public function show(): string
     {
-        $value = match ($this->value) {
-            'boer' => 'B',
-            'vrouw' => 'V',
-            'heer' => 'H',
-            'aas' => 'A',
-            default => $this->value
-        };
+        $value = $this->getValue();
 
         $suit = match ($this->suit) {
             'harten' => '♥',
@@ -43,6 +37,19 @@ class Card
         };
 
         return $suit . $value;
+    }
+
+    public function getValue()
+    {
+        $value = match ($this->value) {
+            'boer' => 'B',
+            'vrouw' => 'V',
+            'heer' => 'H',
+            'aas' => 'A',
+            default => $this->value
+        };
+
+        return $value;
     }
 
     public function score(): int

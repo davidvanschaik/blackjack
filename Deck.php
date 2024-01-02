@@ -14,7 +14,6 @@ class Deck
             foreach ($values as $value) {
                 $this->cards[] = new Card($suit, $value);
                 $this->cards[] = new Card($suit, $value);
-                $this->cards[] = new Card($suit, $value);
             }
         }
     }
