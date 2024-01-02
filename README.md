@@ -53,7 +53,7 @@ Each player will be asked to Hit or Stand if points <= 21. At the end the result
 BlackJack is a bet game where each player needs to place a bet. The game is very simple. The person who is closest or equal to 21 have won, IF the dealer has lower than you. Players will be ask to hit or stand. At the opening hand, the player will be able to double down, this option doubles your bet but you can just hit once. If the values of the cards are equal to each other, also within the opening hand, the player can chose to split their cards, also than the bet will be doubled, because the cards will be devided in 2 hands. From there the rules are just the same. A person can chose to hit a card as many times the cards will below 21. If you have 5 cards and still below 21, that's 'Five Card Charlie', you won.
 
 ## Betting system
-**How the bets for the winners will be calculated:
+**How the bets for the winners will be calculated**:
 
 - BlackJack means you have a Ace and a 10, BlackJack can only be hit in the openings hand. You win 2,5 times your bet. Only if the dealer hits BlackJack it will be seen as a tie, otherwise you win.
 - Five Card Charlie means hitting 3 cards after your opening hand and you are still below 21. You win 2,5 times your bet. There are no exceptions.
