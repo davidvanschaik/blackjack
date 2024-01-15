@@ -40,9 +40,7 @@ class Dealer
 
     private function inTheGame(): array
     {
-        return array_filter($this->players, function ($player) {
-            $player->stillPlaying === true;
-        }); 
+        return array_filter($this->players, fn ($player) => $player->stillPlaying == true);
     }
 
     private function dealerFirstCard(): string
@@ -65,7 +63,6 @@ class Dealer
             }
 
             foreach ($player->playingHands() as $index => $hand) {
-                sleep(1);
                 echo PHP_EOL . "-----------------------------------" . PHP_EOL;
                 echo PHP_EOL . $this->dealerFirstCard() . PHP_EOL;
                 echo PHP_EOL . $this->playerTurn($player, $index) . PHP_EOL;
