@@ -1,4 +1,6 @@
-<?php 
+<?php
+
+use function PHPSTORM_META\map;
 
 class Card
 {
@@ -7,24 +9,24 @@ class Card
 
     public function __construct($suit, $value)
     {
-        $this->validate($suit, $value);
         $this->suit = $suit;
         $this->value = $value;
+        $this->validation($suit, $value);
     }
 
-    private function validate($suit, $value)
+    private function validation($suit, $value): void
     {
-        if ($suit != 'schoppen' && $suit != 'harten' && $suit != 'ruiten' && $suit != 'klaveren') {
-            throw new Exception('Suit must be schoppen, ruiten, harten or klaveren');
+        if ($suit != 'harten' && $suit != 'schoppen' && $suit != 'klaveren' && $suit != 'ruiten') {
+            throw new Exception('Suit is invalid');
+        } 
+        if (is_numeric($value) && $value > 10 || $value < 2) {
+            throw new Exception('Value is invalid');
         }
-        if ((int)$value == $value && (int)$value < 2 && (int)$value > 10) {
-            throw new Exception('Value must be a number between 2 or 10');
-        }
-        if ((int)$value != $value && $value != 'boer' && $value != 'vrouw' && $value != 'heer' && $value != 'aas') {
-            throw new Exception('Value must be boer, vrouw, heer or aas');
+        if (!is_numeric($value) && $value != 'boer' && $value != 'vrouw' && $value != 'heer' && $value != 'aas') {
+            throw new Exception('Value is invalid');
         }
     }
-
+    
     public function show(): string
     {
         $value = $this->getValue();
@@ -39,7 +41,7 @@ class Card
         return $suit . $value;
     }
 
-    public function getValue()
+    public function getValue(): string
     {
         $value = match ($this->value) {
             'boer' => 'B',
@@ -54,15 +56,10 @@ class Card
 
     public function score(): int
     {
-        $score = 0;
-
-        if ($this->value == 'boer' || $this->value == 'vrouw' || $this->value == 'heer') {
-            $score = 10;
-        } elseif ($this->value == 'aas') {
-            $score = 11;
-        } else {
-            $score = $this->value;
-        }
-        return $score;
+        return match ($this->value) {
+            'boer', 'vrouw', 'heer' => 10,
+            'aas' => 11,
+            default => $this->value
+        };
     }
 }

@@ -1,215 +1,170 @@
-<?php
-
-require_once("./Blackjack.php");
-require_once("./Player.php");
-require_once("./Deck.php");
+<?php 
 
 class Dealer
 {
-    private Blackjack $blackjack;
+    private Blackjack $BJ;
     private Deck $deck;
     private array $players = [];
+    private $dealer;
 
     public function __construct(Blackjack $blackjack, Deck $deck)
     {
-        $this->blackjack = $blackjack;
+        $this->BJ = $blackjack;
         $this->deck = $deck;
     }
 
-    public function addPlayer(Player $player)
+    public function addPlayers(Player $player): void
     {
         $this->players[] = $player;
     }
 
-    public function dealCards()
+    public function drawCard(): Card
     {
-        for ($x = 0; $x < 2; $x++) {
-            foreach ($this->players as $person) {
-                $person->addCard($this->deck->drawCard());
-            }
-        }
+        return $this->deck->drawCard();
     }
 
-    private function inTheGame()
-    {
-        return array_filter($this->players, fn ($player) => $player->stillPlaying == true);
-    }
-
-    private function msg($hand)
-    {
-        return (string)$this->blackjack->scoreHand($hand);
-    }
-
-    private function points($hand)
-    {
-        return $this->blackjack->points($hand);
-    }
-
-    private function dealerFirstCard()
+    public function dealCards(): void
     {
         foreach ($this->players as $player) {
-            if ($player->name() == 'Dealer') {
-                return $player->showHand('dealer');
+            $cards = [];
+
+            for ($x = 0; $x < 2; $x++) {
+                $cards[] = $this->drawCard();
             }
+            $player->receiveCards($cards);
         }
+        $dealer = array_pop($this->players);
+        $dealer->stillPlaying = false;
+        $this->dealer = $dealer;
     }
 
-    public function playGame()
+    private function inTheGame(): array
     {
-        $playGame = true;
-        while ($playGame) {
-            if (empty($this->inTheGame())) {
-                $playGame = false;
-                $this->results();
-                exit;
+        return array_filter($this->players, function ($player) {
+            $player->stillPlaying === true;
+        }); 
+    }
+
+    private function dealerFirstCard(): string
+    {
+        return $this->dealer->name . ' has ' . $this->dealer->dealerFirstCard();
+    }
+
+    private function playerTurn(Player $player, $index): string
+    {
+        $turn = (count($player->hands) > 1) ? " => hand " . $index + 1 : "'s turn";
+        return "$player->name$turn. You have " . $player->showHand($player->hands[$index]) . '=> ' . $this->BJ->scoreHand($player->hands[$index]);
+    }
+
+    public function playGame(): void
+    {
+        $playersStillPlaying = count($this->inTheGame());
+        foreach ($this->inTheGame() as $player) {
+            if (empty($player->playingHands())) {
+                $playersStillPlaying--;
             }
-            foreach ($this->inTheGame() as $person) {
-                if ($person->name() == 'Dealer') {
-                    echo PHP_EOL . $person->name() . "'s turn. ";
-                    echo $person->showHand('result') . '=> ' . $this->msg($person->hand()) . PHP_EOL;
-                    $this->dealer($person);
+
+            foreach ($player->playingHands() as $index => $hand) {
+                sleep(1);
+                echo PHP_EOL . "-----------------------------------" . PHP_EOL;
+                echo PHP_EOL . $this->dealerFirstCard() . PHP_EOL;
+                echo PHP_EOL . $this->playerTurn($player, $index) . PHP_EOL;
+                $points = $this->BJ->points($hand);
+
+                if (($points >= 21 && $this->BJ->splitCheck($hand) == false) || ($points < 21 && count($hand->cards) > 4)) {
+                    $hand->stillPlaying = false;
+                    continue;
                 } else {
-                    echo PHP_EOL . $this->dealerFirstCard() . PHP_EOL;
-                    echo PHP_EOL . $person->name() . "'s turn. ";
-                    echo $person->showHand('result') . '=> ' . $this->msg($person->hand()) . PHP_EOL;
-                    $this->player($person);
+                    $this->makeChoice($hand, $player, $points);
+                    break;
                 }
             }
+            $player->setHandName();
         }
-    }
-
-    private function dealer(Player $person)
-    {
-        while ($person->stillPlaying) {
-        $points = $this->points($person->hand());
-
-            if ($points >= 18 || $points < 21 && count($person->hand()) > 4) {
-                $this->dealerStopsPlaying($person, $points);
-            } elseif ($points < 18) {
-                $this->dealerStillPlaying($person);
-            } 
+        if ($playersStillPlaying === 0) {
+            $this->dealerPlaying();
         }
-        $this->playGame();
-    }
+    } 
 
-    private function player(Player $person)
-    {
-        while ($person->stillPlaying) {
-        $points = $this->points($person->hand());
-            if (count($person->hand()) == 2 && $points < 21) {
-                $this->openingsHand($person, $points);
-            } elseif ($points >= 21 || $points < 21 && count($person->hand()) > 4) {
-                $this->playerStopsPlaying($person, $points);
-            } elseif ($points < 21) {
-                $this->makeChoice($person, $points);
-            } 
-        }
-        $this->playGame();
-    }
-
-    private function dealerStopsPlaying($person, $points)
-    {
-        if ($points > 21 || ($points < 21 && count($person->hand()) > 4)) {
-            $person->stillPlaying = false;
-        } elseif ($points >= 18 || $points <= 21) {
-            echo $person->showHand('result')  . '=> ' . $this->msg($person->hand()) .  ' Dealer stops' . PHP_EOL;
-            $person->stillPlaying = false;
-        }
-        $this->dealer($person);
-    }
-
-    private function dealerStillPlaying($person)
-    {
-        sleep(1);
-        $person->addCard($card = $this->deck->drawCard());
-        echo $person->name() . ' drew ' . $card->show() . ' =>' . $person->showHandRaw() . '=> ' . $this->msg($person->hand()) . PHP_EOL;
-        $this->dealer($person);
-    }
-
-    private function openingsHand($person)
+    private function makeChoice(Hand $hand, Player $player, $points): void
     {
         while (true) {
-            if ($this->blackjack->splitCheck($person->hand()) == true) {
-                $choice = strtolower(readline('Hit (H), Double Down (D), Split (SP) or Stand (S) ...? '));
-            } else {
-                $choice = strtolower(readline('Hit (H), Double Down (D) or Stand (S) ...? '));
-            }
+            if ($this->BJ->splitCheck($hand) == true && count($hand->cards) == 2) {
+                $choice = strtolower(readline("Hit (H), Double Down (D), Split (SP) or Stand (S) ?... "));
+
+            } elseif ($points < 21 && count($hand->cards) == 2) {
+                $choice = strtolower(readline("Hit (H), Double Down (D) or Stand (S) ?... "));
+
+            } elseif ($points < 21 && count($hand->cards) > 2) {
+                $choice = strtolower(readline("Hit (H) or Stand (S) ?... "));
+            } 
+
             if (!str_contains('h d s sp', $choice)) {
                 echo 'Input does not match any action, try again.' . PHP_EOL;
             } else {
                 break;
             }
-        }
-        if ($choice == 'sp') {
-            $this->split($person);
-        } elseif ($choice == 'd') {
-            $this->doubleDown($person);
-        } elseif ($choice == 's') {
-            $this->playerStopsPlaying($person, $choice);
-        } else {
-            $this->playerStillPlaying($person);
-        }
-    }
 
-    private function makeChoice($person)
-    {
-        while (true) {
-            $choice = strtolower(readline('Hit (H) or Stand (S) ...? '));
-            if (!str_contains('h s', $choice)) {
-                echo 'Input does not match any action, try again.' . PHP_EOL;
-            } else {
-                break;
+            if (($choice == 'sp' && $this->BJ->splitCheck($hand) == false) || ($choice == 'd' && count($hand->cards) > 2)) {
+                echo 'Action does not match cards, try again.';
             }
         }
-
         if ($choice == 's') {
-            $this->playerStopsPlaying($person, $choice);
+            $hand->stillPlaying = false;
+            echo $player->name . ' Stands!' . PHP_EOL;
+            $this->playGame();
         } else {
-            $this->playerStillPlaying($person, $choice);
+            $this->stillPlaying($hand, $player, $choice);
         }
     }
 
-    private function playerStillPlaying($person)
+    private function stillPlaying(Hand $hand, Player $player, $choice): void
     {
-        $person->addCard($card = $this->deck->drawCard());
-        echo 'You got: ' . $card->show() . ' => ' . $person->showHandRaw() . '=> ' . $this->msg($person->hand()) . PHP_EOL;
-        $this->player($person);
-    } 
 
-    private function playerStopsPlaying($person, $choice)
-    {
-        if ($choice != 's') {
-            $person->stillPlaying = false;
-            $this->player($person);
-        } else {
-            echo $person->name() . ' stands ' . PHP_EOL;
-            $person->stillPlaying = false;
-            $this->player($person);
+        if ($choice == 'sp') {
+            echo $player->name . ' Splits!' . PHP_EOL;
+            $player->receiveCards([array_pop($hand->cards), $this->drawCard()]);
+            $hand->addCard($this->drawCard());
+            $this->playGame();
         }
-    }
+        if ($choice == 'd') {
+            echo $player->name . ' Double Downs!' . PHP_EOL;
+            $hand->doubleDown($this->drawCard());
+            $this->playGame();
+        } else {
+            $hand->addCard($card = $this->drawCard());
+            echo $player->name . ' got ' . $card->show() . ' => ' . $player->showHand($hand) . '=> ' . $this->BJ->scoreHand($hand) . PHP_EOL;
+            $points = $this->BJ->points($hand);
 
-    private function doubleDown($person)
-    {
-        $person->addCard($this->deck->drawCard());
-        $person->doubleDown();
-        echo $person->name() . ' Doubled Down' . PHP_EOL;
-        $this->player($person);
-    }
-
-    private function split($person)
-    {
-        $person->splitHand();
-    }
-
-    private function results()
-    {
-        foreach ($this->players as $key => $player) {
-            if ($player->name() == 'Dealer') {
-                $dealer = $player;
-                unset($this->players[$key]);
-                $this->blackjack->resultValidation($dealer, $this->players);
-                break;
+            if ($points < 21 && count($hand->cards) < 5) {
+                $this->makeChoice($hand, $player, $points);
+            } else {
+                $hand->stillPlaying = false;
+                $this->playGame();
             }
         }
+    }
+
+    private function dealerPlaying(): void
+    {
+        $dealer = $this->dealer;
+        $hand = $dealer->hands[0];
+        echo PHP_EOL . "-----------------------------------" . PHP_EOL;
+        echo PHP_EOL . $dealer->name . "'s turn. " . $dealer->name . ' has ' . $dealer->showHand($hand) . '=> ' . $this->BJ->scoreHand($hand) . PHP_EOL;
+
+        $dealerPlaying = true;
+        while ($dealerPlaying) {
+            $points = $this->BJ->points($hand);
+            if ($points > 17 || $points < 21 && count($hand->cards) > 4) {
+                echo $dealer->name . ' stops.' . PHP_EOL;
+                $dealerPlaying = false;
+            } else {
+                sleep(1);
+                $hand->addCard($card = $this->drawCard());
+                echo $dealer->name . ' got ' . $card->show() . ' => ' . $dealer->showHand($hand) . '=> ' . $this->BJ->scoreHand($hand) . PHP_EOL;
+            }
+        }
+        $this->BJ->resultsValidation($this->players, $dealer);
     }
 }
+

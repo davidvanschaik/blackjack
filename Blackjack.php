@@ -1,129 +1,155 @@
-<?php 
-
-require_once("./Player.php");
+<?php
 
 class Blackjack
 {
-    public $players = [];
-    public function scoreHand(array $hand): string
+    public function scoreHand(Hand $hand): string
     {
         $score = $this->points($hand);
 
-        if (count($hand) == 2 && $score == 21) {
-            return 'BlackJack!';
-        } elseif (count($hand) <= 5 && $score == 21) {
-            return "Twenty-One!";
-        } elseif ($score > 21) {
-            return "is Busted!";
-        } elseif (count($hand) == 5 && $score < 21) {
-            return "Five Card Charlie!";
-        } else {
-            return (string)$score;
-        }
-    } 
+        $outcome = [
+            "BlackJack" => [
+                'cards' => 2,
+                'points' => 21
+            ],
+            "Twenty-One" => [
+                'cards' => -1,
+                'points' => 21
+            ],
+            "Five Card Charlie" => [
+                'cards' => 5,
+                'points' => -1,
+            ]
+        ];
 
-    public function points($hand): int
+        foreach ($outcome as $key => $value) {
+            if (($value['cards'] < 0 || $value['cards'] == count($hand->cards)) && ($value['points'] < 0 || $score <= 21 && $value['points'] == $score)) {
+                return $key;
+            }
+            if (count($hand->cards) == 2 && $score == 22) {
+                return 'Two-Aces';
+            }
+        }
+        return $score <= 21 ? (string)$score : 'is Busted';
+    }
+
+
+    public function points(Hand $hand): int
     {
         $score = 0;
 
-        foreach ($hand as $item) {
-            $score += $item->score();
+        foreach ($hand->cards as $card) {
+            $score += $card->score();
         }
         return $score;
     }
 
-    public function resultValidation($dealer, $players)
+    public function splitCheck(Hand $hand): bool
+    {
+        if ($hand->cards[0]->getValue() === $hand->cards[1]->getValue()) {
+            return true;
+        }
+        return false;
+    }
+
+    public function resultsValidation($players, $dealer): void
     {
         $info = [
             'WINNERS' => [],
             'TIED' => [],
             'LOSERS' => []
         ];
-        $dealerPoints = $this->points($dealer->hand());
+        $dealerPoints = $this->points($dealer->hands[0]);
 
         if ($dealerPoints > 21) {
             $this->bustedDealer($players, $info);
-        } elseif ($dealerPoints == 21 || $this->scoreHand($dealer->hand()) == 'Five Card Charlie!') {
-            $this->tiedWith($dealer, $players, $info);
-        } else {
-            $this->dealerBelowTwentyOne($dealer, $players, $info);
+        }
+        if ($dealerPoints == 21 || $this->scoreHand($dealer->hands[0]) == 'Five Card Charlie!') {
+            $this->dealerWins($players, $dealer, $info);
+        }
+        if ($dealerPoints < 21) {
+            $this->dealerBelow21($players, $dealer, $info);
         }
         $this->results($dealer, $players, $info);
     }
 
-    private function bustedDealer($players, &$info)
+    private function bustedDealer($players, &$info): void
     {
         foreach ($players as $player) {
-            $playerPoints = $this->points($player->hand());
+            foreach ($player->hands as $hand) {
+                $points = $this->points($hand);
 
-            if ($playerPoints > 21) {
-                $info['LOSERS'][] = $player;
-            } else {
-                $info['WINNERS'][] = $player;
+                if ($points > 21) {
+                    $info['LOSERS'][] = $hand;
+                } else {
+                    $info['WINNERS'][] = $hand;
+                }
             }
         }
     }
 
-    private function tiedWith($dealer, $players, &$info)
+    private function dealerWins($players, $dealer, &$info): void
     {
         foreach ($players as $player) {
-            $outputPlayer = $this->scoreHand($player->hand());
-            $outputDealer = $this->scoreHand($dealer->hand());
+            foreach ($player->hands as $hand) {
+                $outputPlayer = $this->scoreHand($hand);
 
-            if ($outputDealer == 'BlackJack!') {
-                if ($outputPlayer == 'BlackJack!' ) {
-                    $info['TIED'][] = $player;
-                } else {
-                    $info['LOSERS'][] = $player;
+                switch ($result = $this->scoreHand($dealer->hands[0])) {
+                    case 'BlackJack!':
+                        if ($outputPlayer == 'BlackJack!') {
+                            $info['TIED'][] = $hand;
+                        } else {
+                            $info['LOSERS'][] = $hand;
+                        }
+                    case 'Five Card Charlie':
+                        if ($outputPlayer == 'BlackJack!') {
+                            $info['WINNERS'][] = $hand;
+                        } elseif ($outputPlayer == 'Five Card Charlie!') {
+                            $info['TIED'][] = $hand;
+                        } else {
+                            $info['LOSERS'][] = $hand;
+                        }
+                    case 'Twenty-One':
+                        if ($outputPlayer == 'BlackJack!' || $outputPlayer == 'Five Card Charlie!') {
+                            $info['WINNERS'][] = $hand;
+                        } elseif ($outputPlayer == 'Twenty-One!') {
+                            $info['TIED'][] = $hand;
+                        } else {
+                            $info['LOSERS'][] = $hand;
+                        }
+                    // No default possible
                 }
-            } elseif ($outputDealer == 'Five Card Charlie!') {
-                if ($outputPlayer == 'BlackJack!') {
-                    $info['WINNERS'][] = $player;
-                } elseif ($outputPlayer == 'Five Card Charlie!') {
-                    $info['TIED'][] = $player;
-                } else {
-                    $info['LOSERS'][] = $player;
-                }
-            } elseif ($outputDealer == 'Twenty-One!') {
-                if ($outputPlayer == 'BlackJack!' || $outputPlayer == 'Five Card Charlie!') {
-                    $info['WINNERS'][] = $player;
-                } elseif ($outputPlayer == 'Twenty-One!') {
-                    $info['TIED'][] = $player;
-                } else {
-                    $info['LOSERS'][] = $player;
-                }
-            } else {
-                $info['LOSERS'][] = $player;
             }
         }
     }
 
-    private function dealerBelowTwentyOne($dealer, $players, &$info)
+    private function dealerBelow21($players, $dealer, &$info): void
     {
         foreach ($players as $player) {
-            $dealerPoints = $this->points($dealer->hand());
-            $playerPoints = $this->points($player->hand());
+            foreach ($player->hands as $hand) {
+                $dealerPoints = $this->points($dealer->hands[0]);
+                $playerPoints = $this->points($hand);
 
-            if ($playerPoints > 21) {
-                $info['LOSERS'][] = $player;
-            } elseif ($playerPoints > $dealerPoints || $this->scoreHand($player->hand()) == 'Five Card Charlie!') {
-                $info['WINNERS'][] = $player;
-            } elseif ($playerPoints < $dealerPoints) {
-                $info['LOSERS'][] = $player;
-            } else {
-                $info['TIED'][] = $player;
+                if ($playerPoints > 21) {
+                    $info['LOSERS'][] = $hand;
+                } elseif ($playerPoints > $dealerPoints || $this->scoreHand($hand) == 'Five Card Charlie!') {
+                    $info['WINNERS'][] = $hand;
+                } elseif ($playerPoints < $dealerPoints) {
+                    $info['LOSERS'][] = $hand;
+                } else {
+                    $info['TIED'][] = $hand;
+                }
             }
         }
     }
 
-    private function results($dealer, $players, $info)
+    private function results($dealer, $players, $info): void
     {
         echo PHP_EOL . 'DEALER:' . PHP_EOL;
-        echo $dealer->showHand('result') . '=> ' . $this->scoreHand($dealer->hand()) . PHP_EOL;
+        echo 'Dealer has ' . $dealer->showHand($dealer->hands[0]) . '=> ' . $this->scoreHand($dealer->hands[0]) . PHP_EOL;
 
         echo PHP_EOL . 'SHOW HAND:' . PHP_EOL;
-        foreach ($this->descResults($players) as $value) {
-            echo $value['hand'] . ' => ' . $value['points'] . PHP_EOL;
+        foreach ($this->descResults($players) as $player) {
+            echo $player['hand'] . '=> ' . $player['points'] . PHP_EOL;
         }
 
         foreach ($info as $key => $value) {
@@ -133,55 +159,48 @@ class Blackjack
                 echo PHP_EOL . $key . ':' . PHP_EOL;
                 foreach ($value as $result) {
                     if ($key == 'TIED') {
-                        echo $result->name() . ' tied with Dealer!' . PHP_EOL;
+                        echo $result->handName . ' tied with Dealer!' . PHP_EOL;
                     } else {
-                        echo $result->name() . PHP_EOL;
+                        echo $result->handName . PHP_EOL;
                     }
                 }
             }
         }
-        if (!empty($info['WINNERS']) || !empty($info['TIED']) ) {
+        if (!empty($info['WINNERS']) || !empty($info['TIED'])) {
             echo PHP_EOL . 'BET:' . PHP_EOL;
 
             foreach ($info as $key => $value) {
-                foreach ($value as $player) {
-                    $message = $this->scoreHand($player->hand());
+                foreach ($value as $hand) {
+                    $message = $this->scoreHand($hand);
 
                     if ($key == 'TIED') {
-                        echo $player->name() . ' has ' . $message . ' => ' . $player->bet() . ' X 1 => ' . $player->bet() . PHP_EOL;
-                    } elseif ($key == 'WINNERS' && $message == 'BlackJack!' || $message == 'Five Card Charlie!') {
-                        echo $player->name() . ' has ' . $message . ' => ' . $player->bet() . ' X 2.5 => ' . $player->bet() * 2.5 . PHP_EOL;
+                        echo $hand->handName . ' has ' . $message . ' => ' . $hand->bet . ' X 1 => ' . $hand->bet . PHP_EOL;
+                    } elseif ($key == 'WINNERS' && $message === 'BlackJack' || $message === 'Five Card Charlie') {
+                        echo $hand->handName . ' has ' . $message . ' => ' . $hand->bet . ' X 2.5 => ' . $hand->bet * 2.5 . PHP_EOL;
                     } elseif ($key == 'WINNERS') {
-                        echo $player->name() . ' has ' . $message . ' => ' . $player->bet() . ' X 2 => ' . $player->bet() * 2 . PHP_EOL;
+                        echo $hand->handName . ' has ' . $message . ' => ' . $hand->bet . ' X 2 => ' . $hand->bet * 2 . PHP_EOL;
                     }
                 }
             }
         }
+        die;
     }
 
     public function descResults($players): array
     {
         $mostPoints = [];
-        foreach ($players as $info) {
-            $mostPoints[] = [
-                'hand' => $info->showHand('result'),
-                'points' => $this->scoreHand($info->hand())
-            ];
+        foreach ($players as $player) {
+            foreach ($player->hands as $hand) {
+                $mostPoints[] = [
+                    'hand' => $hand->handName . ' has ' . $player->showHand($hand),
+                    'points' => $this->scoreHand($hand)
+                ];
+            }
         }
 
         usort($mostPoints, function ($a, $b) {
             return $a['points'] <=> $b['points'];
         });
         return (array)$mostPoints;
-    }
-
-    public function splitCheck($hand)
-    {
-        $check = false;
-
-        if ($hand[0]->getValue() === $hand[1]->getValue()) {
-            $check = true;
-        }
-        return $check;
     }
 }

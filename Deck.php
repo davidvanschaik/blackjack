@@ -1,32 +1,35 @@
-<?php 
-
-require_once("./Card.php");
+<?php
 
 class Deck
 {
-    private $cards = [];
+    private $deck = [];
 
-    public function __construct()
+    public function __construct($decks = 2)
     {
-        $suits = ['schoppen', 'harten', 'klaveren', 'ruiten'];
+        $suits = ['harten', 'schoppen', 'klaveren', 'ruiten'];
         $values = [2, 3, 4, 5, 6, 7, 8, 9, 10, 'boer', 'vrouw', 'heer', 'aas'];
+
         foreach ($suits as $suit) {
             foreach ($values as $value) {
-                $this->cards[] = new Card($suit, $value);
-                $this->cards[] = new Card($suit, $value);
+                for ($x = 0; $x < $decks; $x++) {
+                    $this->deck[] = new Card($suit, $value);
+                }
             }
         }
     }
 
+    public function shuffleCheck(): array
+    {
+        return $this->deck;
+    }
+
     public function drawCard(): Card
     {
-        if (!empty($this->cards)) {
-            $index = array_rand($this->cards);
-            $card = $this->cards[$index];
-            unset($this->cards[$index]);
+        if (count($this->deck) > 1) {
+            shuffle($this->deck);
+            return array_pop($this->deck);
         } else {
-            throw new Exception("All cards have been dealt, shuffle deck");
+            throw new Exception('Deck needs to be shuffled');
         }
-        return $card;
     }
 }

@@ -1,13 +1,12 @@
-<?php
-
-require_once("./Dealer.php");
+<?php 
 
 class Player
 {
-    private $hand = [];
-    private $name;
-    private $bet;
+    public $name;
+    public $bet;
+    public $hands = [];
     public $stillPlaying = true;
+
 
     public function __construct($name, $bet)
     {
@@ -15,50 +14,68 @@ class Player
         $this->bet = $bet;
     }
 
-    public function addCard(Card $card)
+    public function receiveCards(array $cards): void
     {
-        array_push($this->hand, $card);
+        $this->setHand($cards);
     }
 
-    public function showHand($check)
+    private function setHand($cards): void
     {
-        $out = '';
-        foreach ($this->hand as $item) {
-            if ($check == 'result') {
-                $out .= $item->show() . ' ';
-            } else {
-                for ($x = 0; $x < 1; $x++) { 
-                    $out .= $item->show();
-                    break 2;
-                }
+        $index = count($this->hands);
+        $this->hands[$index] = new Hand($cards, $this->bet);
+    }
+
+    public function setHandName(): void
+    {
+        $index = count($this->hands);
+        if ($index < 2) {
+            $this->hands[0]->handName = $this->name;
+        } else {
+            foreach ($this->hands as $key => $hand) {
+                $hand->handName = "$this->name: hand " . $key + 1;
             }
         }
-        return "$this->name has $out";
     }
 
-    public function showHandRaw()
+    public function playingHands(): array
     {
-        return substr($this->showHand('result'), 10);
+        return array_filter($this->hands, fn ($hand) => $hand->stillPlaying == true);
+        $this->playerStillPlaying();
     }
 
-    public function name(): string
+    public function playerStillPlaying(): void
     {
-        return $this->name;
+        $handsPlaying = 0;
+        $index = count($this->hands);
+        for ($x = 0; $x < $index; $x++) {
+            if ($this->hands[$x]->StillPlaying == false) {
+                $handsPlaying += 1;
+            }
+        }
+
+        if ($handsPlaying == $index) {
+            $this->stillPlaying = false;
+        }
     }
 
-    public function hand(): array
+    public function dealerFirstCard(): string
     {
-        return $this->hand;
+        $firstCard = '';
+        foreach ($this->hands as $hand) {
+            foreach ($hand->cards as $card) {
+                $firstCard .= $card->show();
+                break;
+            }
+        }
+        return $firstCard;
     }
 
-    public function bet()
+    public function showHand(Hand $hand): string
     {
-        return $this->bet;
-    }
-
-    public function doubleDown()
-    {
-        $this->bet *= 2;
-        $this->stillPlaying = false;
+        $out = '';
+        foreach ($hand->cards as $card) {
+            $out .= $card->show() . ' ';
+        }
+        return $out;
     }
 }
