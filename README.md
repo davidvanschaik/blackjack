@@ -6,10 +6,11 @@ This repository contains a sumilation of a Blackjack game using PHP and Object-O
 ## Project Structure
 - **Deck.php**: Generates deck. returns a card to Card.php with the suit and value variables.
 - **Card.php**: Contains the validation of the cards and the points.
-- **Player.php**: Contains info like name, if still playing, bets and cards.
+- **Player.php**: Contains info like name, if still playing, bets and hands.
 - **Dealer.php**: Keeps track who is still playing or is busted, also checks if dealer will hit or stand. 
 - **Blackjack.php**: Contains all the result and bet calculations. 
 - **index.php**: Asks user amount of players. Each player enters their name and bet.
+- **Hand.php**: Contains info like hand name, if player splits, bet and cards.
 
 ## Features
 - **Player Interaction**: Interacts with players. Players can Hit, Double Down, Split or Stand.
@@ -35,13 +36,18 @@ cd path/to/blackjack
 **Note**: Make sure you have PHP installed.
 ```bash
 php index.php
-How many players would you like to play with ... ?
+Do you want to play with friends or autoplay?
 ```
+Auto means name and bet will be generated and friends means to enter the player name and bet.
+```bash
+How many players would you like to play with? (2 - 12) .. 
+```
+
 After you have decided with how many players you would like to play, each player need to fill in their name and how much they bet.
 **Note:** Use only letters for your name! 
 ```bash
-What's your name? => .. yourName
-yourName, please place your bet, 5 - 500: 200
+Please enter your name? => .. 
+Please place your bet, 5 - 500: 
 ```
 After all players have given their name and bet the game will begin.
 
