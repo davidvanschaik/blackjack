@@ -22,7 +22,10 @@ class Blackjack
         ];
 
         foreach ($outcome as $key => $value) {
-            if (($value['cards'] < 0 || $value['cards'] == count($hand->cards)) && ($value['points'] < 0 || $score <= 21 && $value['points'] == $score)) {
+            if (
+                ($value['cards'] < 0 || $value['cards'] == count($hand->cards))
+                && ($value['points'] < 0 || ($score <= 21 && $value['points'] == $score))
+            ) {
                 return $key;
             }
             if (count($hand->cards) == 2 && $score == 22) {
@@ -33,17 +36,31 @@ class Blackjack
     }
 
 
-    public function points(Hand $hand): int
+
+    public function points(Hand $hand): string
     {
         $score = 0;
+        $haveAce = false;
 
         foreach ($hand->cards as $card) {
             $score += $card->score();
+
+            if ($card->getValue() == 'A') {
+                $haveAce = true;
+            }
         }
-        return $score;
+
+        if ($haveAce == true && $score < 21) {
+            return "$score/" . $score - 10;
+        } 
+        if ($haveAce == true && $score > 21) {
+            $haveAce = false;
+            return $score - 10;
+        }
+        return (string)$score;
     }
 
-    public function splitCheck(Hand $hand): bool
+    public function splitCheck(Hand $hand)
     {
         if ($hand->cards[0]->getValue() === $hand->cards[1]->getValue()) {
             return true;
@@ -72,7 +89,7 @@ class Blackjack
         $this->results($dealer, $players, $info);
     }
 
-    private function bustedDealer($players, &$info): void
+    private function bustedDealer($players, &$info)
     {
         foreach ($players as $player) {
             foreach ($player->hands as $hand) {
@@ -93,13 +110,14 @@ class Blackjack
             foreach ($player->hands as $hand) {
                 $outputPlayer = $this->scoreHand($hand);
 
-                switch ($result = $this->scoreHand($dealer->hands[0])) {
-                    case 'BlackJack!':
+                switch ($this->scoreHand($dealer->hands[0])) {
+                    case 'BlackJack':
                         if ($outputPlayer == 'BlackJack!') {
                             $info['TIED'][] = $hand;
                         } else {
                             $info['LOSERS'][] = $hand;
                         }
+                        // BlackJack!
                     case 'Five Card Charlie':
                         if ($outputPlayer == 'BlackJack!') {
                             $info['WINNERS'][] = $hand;
@@ -108,6 +126,7 @@ class Blackjack
                         } else {
                             $info['LOSERS'][] = $hand;
                         }
+                        // Five-Card-Charlie
                     case 'Twenty-One':
                         if ($outputPlayer == 'BlackJack!' || $outputPlayer == 'Five Card Charlie!') {
                             $info['WINNERS'][] = $hand;
@@ -116,7 +135,7 @@ class Blackjack
                         } else {
                             $info['LOSERS'][] = $hand;
                         }
-                    // No default possible
+                        // No default possible
                 }
             }
         }
@@ -175,7 +194,7 @@ class Blackjack
 
                     if ($key == 'TIED') {
                         echo $hand->handName . ' has ' . $message . ' => ' . $hand->bet . ' X 1 => ' . $hand->bet . PHP_EOL;
-                    } elseif ($key == 'WINNERS' && $message === 'BlackJack' || $message === 'Five Card Charlie') {
+                    } elseif ($key == 'WINNERS' && in_array($message, ['BlackJack', 'Five Card Charlie'])) {
                         echo $hand->handName . ' has ' . $message . ' => ' . $hand->bet . ' X 2.5 => ' . $hand->bet * 2.5 . PHP_EOL;
                     } elseif ($key == 'WINNERS') {
                         echo $hand->handName . ' has ' . $message . ' => ' . $hand->bet . ' X 2 => ' . $hand->bet * 2 . PHP_EOL;
@@ -201,6 +220,6 @@ class Blackjack
         usort($mostPoints, function ($a, $b) {
             return $a['points'] <=> $b['points'];
         });
-        return (array)$mostPoints;
+        return $mostPoints;
     }
 }
