@@ -63,7 +63,7 @@ class Dealer
             }
 
             foreach ($player->playingHands() as $index => $hand) {
-                echo PHP_EOL . "-----------------------------------" . PHP_EOL;
+                echo PHP_EOL . "------------------------------------" . PHP_EOL;
                 echo PHP_EOL . $this->dealerFirstCard() . PHP_EOL;
                 echo PHP_EOL . $this->playerTurn($player, $index) . PHP_EOL;
                 $points = $this->BJ->points($hand);
